@@ -1110,6 +1110,7 @@ spawn_start(ErlDrvPort port_num, char* name, SysDriverOpts* opts)
 #define FD_DEF_WIDTH 80
 /* Control op */
 #define FD_CTRL_OP_GET_WINSIZE 100
+#define FD_CTRL_OP_ISATTY 103
 
 static int fd_get_window_size(int fd, Uint32 *width, Uint32 *height)
 {
@@ -1131,6 +1132,7 @@ static ErlDrvSSizeT fd_control(ErlDrvData drv_data,
 {
    struct driver_data *data = (struct driver_data *)drv_data;
     char resbuff[2*sizeof(Uint32)];
+    ErlDrvSizeT res_size;
     switch (command) {
     case FD_CTRL_OP_GET_WINSIZE:
 	{
@@ -1139,7 +1141,12 @@ static ErlDrvSSizeT fd_control(ErlDrvData drv_data,
 		return 0;
 	    memcpy(resbuff,&w,sizeof(Uint32));
 	    memcpy(resbuff+sizeof(Uint32),&h,sizeof(Uint32));
+	    res_size = 2*sizeof(Uint32);
 	}
+	break;
+    case FD_CTRL_OP_ISATTY:
+	*resbuff = isatty(data->ifd) && isatty(data->ofd) ? 1 : 0;
+	res_size = 1;
 	break;
     default:
 	return 0;
@@ -1148,7 +1155,7 @@ static ErlDrvSSizeT fd_control(ErlDrvData drv_data,
 	*rbuf = driver_alloc(2*sizeof(Uint32));
     }
     memcpy(*rbuf,resbuff,2*sizeof(Uint32));
-    return 2*sizeof(Uint32);
+    return res_size;
 }
 
 static ErlDrvData fd_start(ErlDrvPort port_num, char* name,

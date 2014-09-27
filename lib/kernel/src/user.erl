@@ -28,6 +28,7 @@
 
 %% Defines for control ops
 -define(CTRL_OP_GET_WINSIZE,100).
+-define(CTRL_OP_ISATTY,103).
 
 %%
 %% The basic server and start-up.
@@ -248,6 +249,16 @@ io_request({setopts,Opts}, Port, Q) when is_list(Opts) ->
     setopts(Opts, Port, Q);
 io_request({requests,Reqs}, Port, Q) ->
     io_requests(Reqs, {ok,ok,Q}, Port);
+
+io_request(isatty,Port,Q) ->
+    case (catch port_control(Port,?CTRL_OP_ISATTY,[])) of
+	[Int] when Int =:= 1 ->
+	    {ok,true,Q};
+	[Int] when Int =:= 0 ->
+	    {ok,false,Q};
+	_ ->
+	    {error,{error,enotsup},Q}
+    end;
 
 %% New in R12
 io_request({get_geometry,columns},Port,Q) ->

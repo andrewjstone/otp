@@ -51,6 +51,9 @@ static int rows;		/* Number of rows available. */
 #define CTRL_OP_GET_WINSIZE 100
 #define CTRL_OP_GET_UNICODE_STATE 101
 #define CTRL_OP_SET_UNICODE_STATE 102
+#define CTRL_OP_ISATTY 103
+
+#define CTRL_NOTSUP 255
 
 static int lbuf_size = BUFSIZ;
 Uint32 *lbuf;		/* The current line buffer */
@@ -197,6 +200,10 @@ static ErlDrvSSizeT ttysl_control(ErlDrvData drv_data,
 	} else {
 	    return 0;
 	}
+	break;
+    case CTRL_OP_ISATTY:
+	*resbuff = CTRL_NOTSUP;
+	res_size=1;
 	break;
     default:
 	return 0;

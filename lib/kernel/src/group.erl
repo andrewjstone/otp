@@ -275,6 +275,17 @@ io_request({get_geometry,rows},Drv,Buf) ->
 	    {error,{error,enotsup},Buf}
     end;
 
+io_request(isatty, Drv, Buf) ->
+    Drv ! {self(),isatty},
+    receive
+	{Drv,isatty,error} ->
+	    {error,{error,enotsup},Buf};
+	{Drv,isatty,Val} ->
+	    {ok,Val,Buf}
+    after 2000 ->
+	    {error,{error,enotsup},Buf}
+    end;
+
 %% BC with pre-R13
 io_request({put_chars,Chars}, Drv, Buf) ->
     io_request({put_chars,latin1,Chars}, Drv, Buf);

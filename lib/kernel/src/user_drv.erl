@@ -33,6 +33,7 @@
 -define(CTRL_OP_GET_WINSIZE,100).
 -define(CTRL_OP_GET_UNICODE_STATE,101).
 -define(CTRL_OP_SET_UNICODE_STATE,102).
+-define(CTRL_OP_ISATTY,103).
 
 %% start()
 %% start(ArgumentList)
@@ -174,6 +175,9 @@ server_loop(Iport, Oport, Curr, User, Gr) ->
 	    server_loop(Iport, Oport, Curr, User, Gr);
 	{User,Req} ->	% never block from user!
 	    io_request(Req, Iport, Oport),
+	    server_loop(Iport, Oport, Curr, User, Gr);
+	{Curr, isatty} ->
+	    Curr ! {self(),isatty,isatty(Iport)},
 	    server_loop(Iport, Oport, Curr, User, Gr);
 	{Curr,tty_geometry} ->
 	    Curr ! {self(),tty_geometry,get_tty_geometry(Iport)},
@@ -451,6 +455,16 @@ get_line({What,Cont0,Rs}, Iport, Oport) ->
 
 get_line_timeout(blink) -> 1000;
 get_line_timeout(more_chars) -> infinity.
+
+isatty(Iport) ->
+    case (catch port_control(Iport,?CTRL_OP_ISATTY,[])) of
+	[Int] when Int =:= 1 ->
+	    true;
+	[Int] when Int =:= 0 ->
+	    false;
+	_ ->
+	    error
+    end.
 
 % Let driver report window geometry,
 % definitely outside of the common interface

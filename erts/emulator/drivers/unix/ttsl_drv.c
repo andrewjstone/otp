@@ -84,6 +84,7 @@ static volatile int cols_needs_update = FALSE;
 #define CTRL_OP_GET_WINSIZE 100
 #define CTRL_OP_GET_UNICODE_STATE 101
 #define CTRL_OP_SET_UNICODE_STATE 102
+#define CTRL_OP_ISATTY 103
 
 
 
@@ -382,6 +383,10 @@ static ErlDrvSSizeT ttysl_control(ErlDrvData drv_data,
 	} else {
 	    return 0;
 	}
+	break;
+    case CTRL_OP_ISATTY:
+	*resbuff = isatty(1) && isatty(0) ? 1 : 0;
+	res_size = 1;
 	break;
     default:
 	return 0;

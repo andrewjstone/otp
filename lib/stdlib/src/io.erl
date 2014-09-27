@@ -23,6 +23,7 @@
 	 get_password/0, get_password/1,
 	 setopts/1, setopts/2, getopts/0, getopts/1]).
 -export([write/1,write/2,read/1,read/2,read/3,read/4]).
+-export([isatty/0,isatty/1]).
 -export([columns/0,columns/1,rows/0,rows/1]).
 -export([fwrite/1,fwrite/2,fwrite/3,fread/2,fread/3,
 	 format/1,format/2,format/3]).
@@ -98,6 +99,21 @@ nl() ->
 nl(Io) ->
 %    o_request(Io, {put_chars,io_lib:nl()}).
     o_request(Io, nl, nl).
+
+-spec isatty() -> {'ok', boolean()} | {'error', 'enotsup'}.
+isatty() ->
+    isatty(default_output()).
+
+-spec isatty(IoDevice) -> {'ok', boolean()}  | {'error', 'enotsup'} when
+      IoDevice :: device().
+
+isatty(Io) ->
+    case request(Io, isatty) of
+	Val when is_boolean(Val) ->
+	    {ok,Val};
+	_ ->
+	    {error,enotsup}
+    end.
 
 -spec columns() -> {'ok', pos_integer()} | {'error', 'enotsup'}.
 
